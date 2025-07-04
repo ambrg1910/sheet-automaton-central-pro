@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Upload, Play, Settings, Calendar, FileText, BarChart3 } from 'lucide-react';
+import { Upload, Play, Settings, Calendar, FileText, BarChart3, Database } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,7 @@ import FileUploader from '@/components/FileUploader';
 import ProcessConfig from '@/components/ProcessConfig';
 import ScheduleManager from '@/components/ScheduleManager';
 import ResultsViewer from '@/components/ResultsViewer';
+import ExtractorManager from '@/components/ExtractorManager';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -17,7 +18,7 @@ const Index = () => {
       id: 'conta-nova',
       name: 'Arquivos Conta Nova',
       description: 'Processamento com validação e resumo automático',
-      status: 'ready',
+      status: 'ready' as const,
       lastRun: '2024-07-03 14:30',
       filesProcessed: 247,
       successRate: 98.5
@@ -26,10 +27,19 @@ const Index = () => {
       id: 'vendas-csv',
       name: 'Relatório de Vendas CSV',
       description: 'Consolidação de arquivos CSV de vendas',
-      status: 'ready',
+      status: 'ready' as const,
       lastRun: '2024-07-02 09:15',
       filesProcessed: 89,
       successRate: 100
+    },
+    {
+      id: 'extrator-conta',
+      name: 'Validação com Extrator',
+      description: 'Validação de propostas contra base do extrator',
+      status: 'ready' as const,
+      lastRun: '2024-07-04 10:20',
+      filesProcessed: 156,
+      successRate: 94.2
     }
   ]);
 
@@ -46,7 +56,7 @@ const Index = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-fit lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:w-fit lg:grid-cols-6">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Dashboard
@@ -54,6 +64,10 @@ const Index = () => {
             <TabsTrigger value="process" className="flex items-center gap-2">
               <Play className="h-4 w-4" />
               Processar
+            </TabsTrigger>
+            <TabsTrigger value="extractor" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Extrator
             </TabsTrigger>
             <TabsTrigger value="config" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -75,6 +89,10 @@ const Index = () => {
 
           <TabsContent value="process" className="space-y-6">
             <FileUploader processes={processes} />
+          </TabsContent>
+
+          <TabsContent value="extractor" className="space-y-6">
+            <ExtractorManager />
           </TabsContent>
 
           <TabsContent value="config" className="space-y-6">

@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, FolderOpen, Play, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FolderOpen, Play, FileText, CheckCircle, AlertCircle, Database } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
 interface Process {
@@ -23,28 +24,31 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
   const [selectedProcess, setSelectedProcess] = useState('');
   const [inputPath, setInputPath] = useState('');
   const [outputPath, setOutputPath] = useState('Relatorio_Unificado.xlsx');
+  const [extractorPath, setExtractorPath] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [files, setFiles] = useState<File[]>([]);
+  const [folderStats, setFolderStats] = useState<{count: number, types: string[]} | null>(null);
   const [processingLog, setProcessingLog] = useState<string[]>([]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(prev => [...prev, ...droppedFiles]);
-    toast.success(`${droppedFiles.length} arquivo(s) adicionado(s)`);
+  const handleFolderSelect = useCallback(() => {
+    // Simular seleção de pasta
+    const mockPath = 'C:\\Documentos\\Planilhas_Entrada';
+    setInputPath(mockPath);
+    
+    // Simular contagem de arquivos na pasta
+    const mockStats = {
+      count: 15,
+      types: ['xlsx', 'xls', 'csv']
+    };
+    setFolderStats(mockStats);
+    toast.success(`Pasta selecionada: ${mockStats.count} arquivos encontrados`);
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-  }, []);
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFiles = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...selectedFiles]);
-      toast.success(`${selectedFiles.length} arquivo(s) selecionado(s)`);
-    }
+  const handleExtractorSelect = useCallback(() => {
+    // Simular seleção do arquivo extrator
+    const mockPath = 'C:\\Documentos\\extrator_base.xlsx';
+    setExtractorPath(mockPath);
+    toast.success('Arquivo extrator carregado com sucesso');
   }, []);
 
   const simulateProcessing = async () => {
@@ -53,8 +57,8 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
       return;
     }
 
-    if (files.length === 0) {
-      toast.error('Adicione pelo menos um arquivo');
+    if (!inputPath) {
+      toast.error('Selecione a pasta de entrada');
       return;
     }
 
@@ -62,11 +66,25 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
     setProgress(0);
     setProcessingLog([]);
 
-    const logMessages = [
+    const isExtractorProcess = selectedProcess === 'extrator-conta';
+    
+    const logMessages = isExtractorProcess ? [
+      'Iniciando processamento com validação do extrator...',
+      'Carregando arquivo extrator de referência...',
+      'Lendo arquivos da pasta de entrada...',
+      `Processando ${folderStats?.count || 0} arquivo(s)...`,
+      'Unificando dados das planilhas...',
+      'Validando propostas contra base do extrator...',
+      'Identificando contas: Abertas vs A Abrir...',
+      'Calculando métricas de validação...',
+      'Criando relatório de status das contas...',
+      'Gerando estatísticas de taxa de sucesso...',
+      'Salvando relatório final...',
+      'Processo de validação concluído!'
+    ] : [
       'Iniciando processamento...',
-      'Validando arquivos de entrada...',
-      'Lendo configurações do processo...',
-      `Processando ${files.length} arquivo(s)...`,
+      'Lendo arquivos da pasta de entrada...',
+      `Processando ${folderStats?.count || 0} arquivo(s)...`,
       'Unificando dados...',
       'Aplicando validações...',
       'Criando tabela de resumo...',
@@ -76,14 +94,21 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
     ];
 
     for (let i = 0; i < logMessages.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setProcessingLog(prev => [...prev, logMessages[i]]);
       setProgress((i + 1) / logMessages.length * 100);
     }
 
     setIsProcessing(false);
-    toast.success('Processamento concluído!');
+    
+    if (isExtractorProcess) {
+      toast.success('Validação com extrator concluída! Relatório gerado com métricas de contas abertas/a abrir.');
+    } else {
+      toast.success('Processamento concluído!');
+    }
   };
+
+  const isExtractorProcess = selectedProcess === 'extrator-conta';
 
   return (
     <div className="space-y-6">
@@ -94,7 +119,7 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
             Configuração do Processamento
           </CardTitle>
           <CardDescription>
-            Configure os parâmetros e arquivos para processamento
+            Configure os parâmetros para processamento em lote
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -125,6 +150,33 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
               />
             </div>
           </div>
+
+          {isExtractorProcess && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <Database className="h-5 w-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-800">Validação com Extrator</h3>
+              </div>
+              <p className="text-sm text-blue-700 mb-4">
+                Este processo validará as propostas contra a base do extrator para identificar contas abertas vs contas a abrir.
+              </p>
+              <div className="space-y-2">
+                <Label>Arquivo Extrator (Base de Referência)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={extractorPath}
+                    placeholder="Selecione o arquivo extrator..."
+                    readOnly
+                    className="flex-1"
+                  />
+                  <Button onClick={handleExtractorSelect} variant="outline">
+                    <Database className="h-4 w-4 mr-2" />
+                    Selecionar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -132,61 +184,46 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FolderOpen className="h-5 w-5" />
-            Upload de Arquivos
+            Pasta de Entrada
           </CardTitle>
           <CardDescription>
-            Adicione os arquivos que serão processados
+            Selecione a pasta contendo os arquivos para processamento
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div
-            className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onClick={() => document.getElementById('file-input')?.click()}
-          >
-            <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-700 mb-2">
-              Arraste arquivos aqui ou clique para selecionar
-            </h3>
-            <p className="text-slate-500">
-              Suporte para arquivos Excel (.xlsx, .xls) e CSV
-            </p>
-            <input
-              id="file-input"
-              type="file"
-              multiple
-              className="hidden"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleFileSelect}
-            />
-          </div>
-
-          {files.length > 0 && (
-            <div className="mt-4">
-              <h4 className="font-semibold mb-2">Arquivos Selecionados ({files.length})</h4>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {files.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-slate-50 rounded">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm">{file.name}</span>
-                      <span className="text-xs text-slate-500">
-                        ({(file.size / 1024).toFixed(1)} KB)
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ))}
-              </div>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                value={inputPath}
+                placeholder="Caminho da pasta de entrada..."
+                readOnly
+                className="flex-1"
+              />
+              <Button onClick={handleFolderSelect} variant="outline">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Selecionar Pasta
+              </Button>
             </div>
-          )}
+
+            {folderStats && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-green-800">Arquivos Encontrados</span>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    {folderStats.count} arquivos
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-sm text-green-700">Tipos: </span>
+                  {folderStats.types.map((type) => (
+                    <Badge key={type} variant="outline" className="text-xs">
+                      .{type}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -200,7 +237,7 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
         <CardContent className="space-y-4">
           <Button
             onClick={simulateProcessing}
-            disabled={isProcessing}
+            disabled={isProcessing || !inputPath || (isExtractorProcess && !extractorPath)}
             className="w-full h-12 text-lg"
           >
             {isProcessing ? (
@@ -211,7 +248,7 @@ const FileUploader = ({ processes }: FileUploaderProps) => {
             ) : (
               <>
                 <Play className="h-5 w-5 mr-2" />
-                Iniciar Processamento
+                {isExtractorProcess ? 'Iniciar Validação com Extrator' : 'Iniciar Processamento'}
               </>
             )}
           </Button>
