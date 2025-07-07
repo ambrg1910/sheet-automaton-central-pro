@@ -364,16 +364,18 @@ class ValidadorPropostas:
             # Validação de colunas
             if 'Proposta' not in df_unificado.columns:
                 raise ValueError("Coluna 'Proposta' não encontrada no arquivo unificado")
-            if 'Proposta' not in df_extrator.columns:
-                raise ValueError("Coluna 'Proposta' não encontrada no arquivo extrator")
+            # --- ALTERAÇÃO 1: Mudar a coluna esperada no extrator ---
+            if 'Número de Contrato' not in df_extrator.columns:
+                raise ValueError("Coluna 'Número de Contrato' não encontrada no arquivo extrator")
             
             # Processo de validação (usando pandas para performance)
             self.app.log("Executando validação de propostas...", "INFO")
             
             # Criar lista de propostas do extrator para comparação
-            propostas_extrator = set(df_extrator['Proposta'].dropna().astype(str))
+            # --- ALTERAÇÃO 2: Usar a coluna 'Número de Contrato' para a comparação ---
+            propostas_extrator = set(df_extrator['Número de Contrato'].dropna().astype(str))
             
-            # Aplicar validação usando pandas (MUITO mais rápido que loops)
+            # Aplicar validação usando pandas (Esta parte continua igual)
             df_unificado['Status_Conta'] = df_unificado['Proposta'].astype(str).apply(
                 lambda x: 'CONTA ABERTA' if x in propostas_extrator else 'PENDENTE'
             )
