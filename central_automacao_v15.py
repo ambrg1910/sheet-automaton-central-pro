@@ -348,70 +348,83 @@ class ValidadorPropostas:
     def __init__(self, app_instance):
         self.app = app_instance
 
+    class ValidadorPropostas:
+    def __init__(self, app_instance):
+        self.app = app_instance
+
     def run_validation_process(self, arquivo_unificado, arquivo_extrator, arquivo_saida):
         start_time = time.time()
-        self.app.log("=== INICIANDO VALIDAÇÃO DE PROPOSTAS ===", "INFO")
+        self.app.log("=== INICIANDO VALIDAÇÃO DE PROPOSTAS (v2) ===", "INFO")
         
         try:
-            # Carregando arquivo unificado
-            self.app.log("Carregando arquivo unificado...", "INFO")
+            # --- CARREGAMENTO DOS ARQUIVOS ---
+            self.app.log(f"Carregando arquivo unificado: {os.path.basename(arquivo_unificado)}", "INFO")
             df_unificado = ler_arquivo_simples(arquivo_unificado)
             
-            # Carregando arquivo extrator
-            self.app.log("Carregando arquivo extrator...", "INFO")
+            self.app.log(f"Carregando arquivo extrator: {os.path.basename(arquivo_extrator)}", "INFO")
             df_extrator = ler_arquivo_simples(arquivo_extrator)
+
+            # --- DEBUG: Mostrar as colunas como foram lidas ---
+            self.app.log(f"Colunas do Unificado: {list(df_unificado.columns)}", "INFO")
+            self.app.log(f"Colunas do Extrator: {list(df_extrator.columns)}", "INFO")
+
+            # --- DEFINIÇÃO DOS NOMES DAS COLUNAS-CHAVE ---
+            # Defina aqui os nomes EXATOS das colunas como aparecem nos arquivos
+            coluna_proposta_unificado = 'Proposta'
+            coluna_contrato_extrator = 'Número de Contrato'
             
-            # Validação de colunas
-            if 'Proposta' not in df_unificado.columns:
-                raise ValueError("Coluna 'Proposta' não encontrada no arquivo unificado")
-            # --- ALTERAÇÃO 1: Mudar a coluna esperada no extrator ---
-            if 'Número de Contrato' not in df_extrator.columns:
-                raise ValueError("Coluna 'Número de Contrato' não encontrada no arquivo extrator")
+            # --- VERIFICAÇÃO DAS COLUNAS ---
+            if coluna_proposta_unificado not in df_unificado.columns:
+                raise ValueError(f"Coluna '{coluna_proposta_unificado}' não encontrada no arquivo unificado!")
+            if coluna_contrato_extrator not in df_extrator.columns:
+                raise ValueError(f"Coluna '{coluna_contrato_extrator}' não encontrada no arquivo extrator!")
             
-            # Processo de validação (usando pandas para performance)
-            self.app.log("Executando validação de propostas...", "INFO")
+            # --- PROCESSO DE VALIDAÇÃO ROBUSTO ---
+            self.app.log("Executando validação de propostas de forma robusta...", "INFO")
             
-            # Criar lista de propostas do extrator para comparação
-            # --- ALTERAÇÃO 2: Usar a coluna 'Número de Contrato' para a comparação ---
-            propostas_extrator = set(df_extrator['Número de Contrato'].dropna().astype(str))
+            # **MELHORIA PRINCIPAL:**
+            # 1. Converte a coluna para texto (string).
+            # 2. Remove espaços em branco do início e do fim (`.str.strip()`).
+            # 3. Coloca tudo em um `set` para comparação ultra-rápida.
+            self.app.log(f"Limpando e preparando a coluna '{coluna_contrato_extrator}' do extrator.", "INFO")
+            contratos_extrator = set(df_extrator[coluna_contrato_extrator].dropna().astype(str).str.strip())
             
-            # Aplicar validação usando pandas (Esta parte continua igual)
-            df_unificado['Status_Conta'] = df_unificado['Proposta'].astype(str).apply(
-                lambda x: 'CONTA ABERTA' if x in propostas_extrator else 'PENDENTE'
+            # **Lógica de Aplicação Aprimorada**
+            self.app.log(f"Comparando a coluna '{coluna_proposta_unificado}' contra os contratos do extrator.", "INFO")
+            df_unificado['Status_Conta'] = df_unificado[coluna_proposta_unificado].astype(str).str.strip().apply(
+                lambda x: 'CONTA ABERTA' if x in contratos_extrator else 'PENDENTE'
             )
             
-            # Calcular estatísticas
+            # --- CÁLCULO DAS ESTATÍSTICAS ---
             total_propostas = len(df_unificado)
             contas_abertas = len(df_unificado[df_unificado['Status_Conta'] == 'CONTA ABERTA'])
             contas_pendentes = total_propostas - contas_abertas
             taxa_sucesso = (contas_abertas / total_propostas * 100) if total_propostas > 0 else 0
             
-            # Salvar resultado
+            # --- SALVAR O RESULTADO ---
             self.app.log("Salvando relatório de validação...", "INFO")
             df_unificado.to_excel(arquivo_saida, index=False, engine='openpyxl')
             auto_adjust_excel_columns(arquivo_saida)
             
             tempo_execucao = time.time() - start_time
             
-            # Estatísticas para a janela de sumário
             stats = {
-                'total_propostas': total_propostas,
-                'contas_abertas': contas_abertas,
-                'contas_pendentes': contas_pendentes,
-                'taxa_sucesso': taxa_sucesso,
-                'tempo': tempo_execucao,
-                'output_path': arquivo_saida
+                'total_propostas': total_propostas, 'contas_abertas': contas_abertas,
+                'contas_pendentes': contas_pendentes, 'taxa_sucesso': taxa_sucesso,
+                'tempo': tempo_execucao, 'output_path': arquivo_saida
             }
             
             self.app.log(f"VALIDAÇÃO CONCLUÍDA COM SUCESSO!", "SUCCESS")
             self.app.log(f"Total: {total_propostas} | Abertas: {contas_abertas} | Pendentes: {contas_pendentes} | Taxa: {taxa_sucesso:.1f}%", "SUCCESS")
             
-            # Mostrar janela de sumário
             self.app.after(100, lambda: ValidationSummaryWindow(self.app, stats))
             
         except Exception as e:
-            self.app.log(f"ERRO na validação: {e}", "ERROR")
-            messagebox.showerror("Erro de Validação", f"Falha na validação:\n\n{str(e)}")
+            # Exibir a exceção completa no log e na caixa de mensagem para fácil depuração
+            import traceback
+            error_details = traceback.format_exc()
+            self.app.log(f"ERRO CRÍTICO na validação: {e}\n{error_details}", "ERROR")
+            messagebox.showerror("Erro de Validação", f"Falha catastrófica na validação:\n\n{str(e)}")
 
 # --- INTERFACE PRINCIPAL COM ABAS ---
 class App(ctk.CTk):
