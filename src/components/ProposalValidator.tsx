@@ -343,15 +343,13 @@ const ProposalValidator = ({ unifiedData }: ProposalValidatorProps) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="input-files">Selecionar Pasta de Entrada</Label>
-            <input
+            <Label htmlFor="input-files">Selecionar Arquivos da Pasta de Entrada</Label>
+            <Input
               id="input-files"
               type="file"
-              {...({ webkitdirectory: "" } as any)}
               multiple
               accept=".xlsx,.xls,.csv"
               onChange={handleFolderSelect}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             />
             {inputFolder && (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
