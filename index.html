@@ -1,24 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sheet-automaton-central-pro</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Propostas Web</title>
+    <style>
+        body { font-family: sans-serif; background-color: #121212; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 90%; max-width: 800px; background-color: #1e1e1e; padding: 2rem; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        h1 { text-align: center; color: #bb86fc; }
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="file"] { width: 100%; padding: 0.5rem; background-color: #333; border: 1px solid #444; border-radius: 4px; }
+        button { width: 100%; padding: 1rem; font-size: 1.2rem; background-color: #03dac6; color: #000; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #018786; }
+        button:disabled { background-color: #444; cursor: not-allowed; }
+        #status { text-align: center; margin-top: 1.5rem; font-size: 1.1rem; min-height: 25px; }
+        #resultado { margin-top: 2rem; background-color: #2c2c2c; padding: 1rem; border-radius: 4px; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #444; }
+        th { background-color: #bb86fc; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Validador de Propostas Web</h1>
+        
+        <div class="input-group">
+            <label for="arquivoUnificado">1. Arquivo Unificado (com a coluna 'Proposta'):</label>
+            <input type="file" id="arquivoUnificado" accept=".xlsx, .xls">
+        </div>
 
-    <meta property="og:title" content="sheet-automaton-central-pro" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+        <div class="input-group">
+            <label for="arquivoExtrator">2. Arquivo Extrator (com a coluna 'Número de Contrato'):</label>
+            <input type="file" id="arquivoExtrator" accept=".xlsx, .xls">
+        </div>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+        <button id="btnProcessar">Processar e Validar</button>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        <div id="status"></div>
+        <div id="resultado" style="display:none;">
+            <h2>Resultado da Validação</h2>
+            <table id="tabelaResultado"></table>
+        </div>
+    </div>
+
+    <!-- O JavaScript que faz a mágica acontecer -->
+    <script src="script.js"></script>
+</body>
 </html>
