@@ -227,36 +227,37 @@ const ProposalValidator = ({ unifiedData }: ProposalValidatorProps) => {
       // Carregar arquivo extrator
       const extractorData = await readFile(extractorFile);
       
-      // Extrair propostas do extrator
-      addLog('Etapa 4: Extraindo propostas do arquivo mestre...');
-      const extractorProposals = new Set<string>();
+      // Extrair números de cartão do extrator (base mestre)
+      addLog('Etapa 4: Extraindo números de cartão do arquivo mestre...');
+      const extractorCartoes = new Set<string>();
       
       extractorData.forEach(row => {
         Object.keys(row).forEach(key => {
-          if (key.toLowerCase().includes('proposta')) {
-            const proposta = row[key];
-            if (proposta && proposta.toString().trim() !== '') {
-              extractorProposals.add(proposta.toString().trim());
+          if (key.toLowerCase().includes('número') && key.toLowerCase().includes('cartão')) {
+            const cartao = row[key];
+            if (cartao && cartao.toString().trim() !== '') {
+              extractorCartoes.add(cartao.toString().trim());
             }
           }
         });
       });
 
-      addLog(`${extractorProposals.size} propostas encontradas no extrator`);
+      addLog(`${extractorCartoes.size} números de cartão encontrados no extrator`);
       addLog('Etapa 5: Executando validação e reconciliação...');
 
-      // Validar cada proposta
+      // Validar cada proposta contra números de cartão do extrator
       const validatedData = allData.map(row => {
         let proposta = '';
         
-        // Encontrar a coluna Proposta (flexível para diferentes nomes)
+        // Encontrar a coluna Proposta no relatório (flexível para diferentes nomes)
         Object.keys(row).forEach(key => {
           if (key.toLowerCase().includes('proposta')) {
             proposta = (row[key] || '').toString().trim();
           }
         });
         
-        const status = extractorProposals.has(proposta) ? 'CONTA ABERTA' : 'PENDENTE';
+        // Verificar se a proposta existe como número de cartão no extrator
+        const status = extractorCartoes.has(proposta) ? 'CONTA ABERTA' : 'CONTA NÃO ABERTA';
         
         return {
           ...row,
