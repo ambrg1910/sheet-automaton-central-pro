@@ -262,18 +262,38 @@ class Processor:
                 erros.append(f"{nome_arquivo}: Erro - {e}")
         return dados_validos, erros
 
-    def _unificar_e_tratar_dados(self, dados_validos, regras):
-        self.app.log("Unificando dados...", "INFO")
+     def _unificar_e_tratar_dados(self, dados_validos, regras):
+        self.app.log("Unificando e tratando dados (lógica corrigida)...", "INFO")
+        
+        # 1. Unifica todos os dataframes em um só. Neste ponto, todos os nomes de colunas estão "limpos".
         planilha_final = pd.concat(dados_validos, ignore_index=True)
+        
+        # 2. Pega o dicionário de colunas do config.json ("Nome Original": "Tipo de Dado")
         regras_colunas_orig = regras.get("colunas_padrao", {})
-        regras_colunas_clean = {clean_name(k): v for k, v in regras_colunas_orig.items()}
+        
+        # 3. Cria um mapa de nome "limpo" para o nome "Original" (ex: 'cnpj_promotora' -> 'CNPJ Promotora')
         map_clean_to_orig = {clean_name(k): k for k in regras_colunas_orig.keys()}
         
-        colunas_a_manter = list(regras_colunas_clean.keys()) + ['arquivo_origem']
-        colunas_existentes = [col for col in colunas_a_manter if col in planilha_final.columns]
-        planilha_final = planilha_final[colunas_existentes]
-        planilha_final.dropna(how='all', subset=[c for c in list(regras_colunas_clean.keys()) if c in planilha_final.columns], inplace=True)
-        return planilha_final.rename(columns=map_clean_to_orig)
+        # 4. Define quais colunas "limpas" devem existir no arquivo final (baseado no que foi definido no config)
+        colunas_limpas_desejadas = list(map_clean_to_orig.keys())
+        
+        # 5. Filtra a planilha_final, mantendo APENAS as colunas "limpas" que desejamos e a coluna 'arquivo_origem'.
+        #    Isso elimina quaisquer colunas duplicadas ou indesejadas que possam ter surgido.
+        colunas_a_manter = [col for col in colunas_limpas_desejadas if col in planilha_final.columns]
+        colunas_a_manter.append('arquivo_origem') # Não esquecer da origem!
+        
+        planilha_filtrada = planilha_final[colunas_a_manter]
+        
+        # 6. Renomeia as colunas "limpas" para seus nomes originais, seguindo o config.json.
+        planilha_renomeada = planilha_filtrada.rename(columns=map_clean_to_orig)
+        
+        # 7. Remove linhas que são completamente vazias (considerando as colunas originais do config)
+        nomes_finais_das_colunas = list(regras_colunas_orig.keys())
+        planilha_renomeada.dropna(how='all', subset=[c for c in nomes_finais_das_colunas if c in planilha_renomeada.columns], inplace=True)
+
+        self.app.log("Tratamento de colunas concluído. Duplicações removidas.", "SUCCESS")
+        
+        return planilha_renomeada
 
     def _gerar_relatorio_excel(self, df, pasta_out, regras):
         with pd.ExcelWriter(pasta_out, engine='openpyxl') as writer:
