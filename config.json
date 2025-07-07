@@ -1,0 +1,100 @@
+{
+  "Processos": {
+    "Arquivos Conta Nova (Com Validação e Resumo)": {
+      "tipo_arquivo": "excel",
+      "nome_da_aba": null,
+      "linha_do_cabecalho": 10,
+      "colunas_essenciais": [
+        "CPF Cliente",
+        "Proposta",
+        "Cliente"
+      ],
+      "colunas_padrao": {
+        "Agencia": { "tipo_esperado": "texto" },
+        "Bairro": { "tipo_esperado": "texto" },
+        "Base de Calculo": { "tipo_esperado": "numero" },
+        "CNPJ Promotora": { "tipo_esperado": "texto" },
+        "Codigo Promotora": { "tipo_esperado": "numero" },
+        "Codigo do Agente": { "tipo_esperado": "numero" },
+        "Cod. Banco Empregador": { "tipo_esperado": "numero" },
+        "Codigo Orgao": { "tipo_esperado": "numero" },
+        "CPF Cliente": { "tipo_esperado": "cpf" },
+        "Cep": { "tipo_esperado": "texto" },
+        "Cidade": { "tipo_esperado": "texto" },
+        "Compensacao do banco": { "tipo_esperado": "texto" },
+        "Complemento": { "tipo_esperado": "texto" },
+        "Conta corrente": { "tipo_esperado": "texto" },
+        "Primeiro Vencimento": { "tipo_esperado": "data" },
+        "Dt. Admissao": { "tipo_esperado": "data" },
+        "Data Base": { "tipo_esperado": "data" },
+        "Data Cadastro": { "tipo_esperado": "data" },
+        "Data Nasc.": { "tipo_esperado": "data" },
+        "Descr. Promotora": { "tipo_esperado": "texto" },
+        "Descr. Tabela": { "tipo_esperado": "texto" },
+        "Descr. Banco": { "tipo_esperado": "texto" },
+        "Descr. Empregador": { "tipo_esperado": "texto" },
+        "Descr. Orgao": { "tipo_esperado": "texto" },
+        "Endereco Cliente": { "tipo_esperado": "texto" },
+        "Estado": { "tipo_esperado": "texto" },
+        "Estado civil": { "tipo_esperado": "texto" },
+        "Estorno": { "tipo_esperado": "texto" },
+        "Fone Cel.": { "tipo_esperado": "texto" },
+        "Fone Com.": { "tipo_esperado": "texto" },
+        "Fone Res.": { "tipo_esperado": "texto" },
+        "Forma liberacao 1": { "tipo_esperado": "texto" },
+        "Matricula": { "tipo_esperado": "texto" },
+        "Motivo do Estorno 1": { "tipo_esperado": "texto" },
+        "Numero da Parcela Paga": { "tipo_esperado": "numero" },
+        "Proposta": { "tipo_esperado": "texto" },
+        "Numero Endereco": { "tipo_esperado": "texto" },
+        "Nacionalidade": { "tipo_esperado": "texto" },
+        "Nome da mae": { "tipo_esperado": "texto" },
+        "Nome do Agente": { "tipo_esperado": "texto" },
+        "Cliente": { "tipo_esperado": "texto" },
+        "Nome do Pai": { "tipo_esperado": "texto" },
+        "Nome usu. cad. Proposta": { "tipo_esperado": "texto" },
+        "Nome usu. int. Proposta": { "tipo_esperado": "texto" },
+        "Profissao": { "tipo_esperado": "texto" },
+        "Qtd Parcelas": { "tipo_esperado": "numero" },
+        "Qtd Parcelas Liq.": { "tipo_esperado": "numero" },
+        "Qtd. Liberacoes": { "tipo_esperado": "numero" },
+        "R.G. Cliente": { "tipo_esperado": "texto" },
+        "Renda": { "tipo_esperado": "numero" },
+        "Sexo": { "tipo_esperado": "texto" },
+        "Tabela utilizada": { "tipo_esperado": "texto" },
+        "Vencimento do contrato": { "tipo_esperado": "data" },
+        "Vlr. Final": { "tipo_esperado": "numero" },
+        "Vlr. IOF": { "tipo_esperado": "numero" },
+        "Vlr. TAC": { "tipo_esperado": "numero" },
+        "Vlr. de Comissao": { "tipo_esperado": "numero" },
+        "Vlr da parcela": { "tipo_esperado": "numero" },
+        "Vlr. emprestimo": { "tipo_esperado": "numero" },
+        "Valor liberacao 1": { "tipo_esperado": "numero" },
+        "Agente Entregador": { "tipo_esperado": "texto" }
+      },
+      "tabela_dinamica": {
+        "criar": true,
+        "nome_aba": "Resumo por Agente",
+        "valores": ["Vlr. emprestimo"],
+        "linhas": ["Nome do Agente"],
+        "colunas": ["Estado"],
+        "agregacao": "Sum"
+      }
+    },
+    "Relatório de Vendas (CSV - Exemplo)": {
+      "tipo_arquivo": "csv",
+      "delimitador": ";",
+      "linha_do_cabecalho": 1,
+      "colunas_essenciais": ["ID_VENDA", "PRODUTO"],
+      "colunas_padrao": {
+        "ID_VENDA": { "tipo_esperado": "texto" },
+        "DATA": { "tipo_esperado": "data" },
+        "PRODUTO": { "tipo_esperado": "texto" },
+        "VENDEDOR": { "tipo_esperado": "texto" }
+      },
+      "tabela_dinamica": {
+        "criar": false
+      }
+    }
+  }
+}
